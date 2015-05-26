@@ -226,11 +226,11 @@ formatExpiry = (e) ->
 
   if /^\d$/.test(val) and val not in ['0', '1']
     e.preventDefault()
-    setTimeout -> $target.val("0#{val} / ")
+    setTimeout -> $target.val("0#{val}" + $.payment.expiryFormat)
 
   else if /^\d\d$/.test(val)
     e.preventDefault()
-    setTimeout -> $target.val("#{val} / ")
+    setTimeout -> $target.val(val + $.payment.expiryFormat)
 
 formatForwardExpiry = (e) ->
   digit = String.fromCharCode(e.which)
@@ -240,7 +240,7 @@ formatForwardExpiry = (e) ->
   val     = $target.val()
 
   if /^\d\d$/.test(val)
-    $target.val("#{val} / ")
+    $target.val(val + $.payment.expiryFormat)
 
 formatForwardSlashAndSpace = (e) ->
   which = String.fromCharCode(e.which)
@@ -250,7 +250,7 @@ formatForwardSlashAndSpace = (e) ->
   val     = $target.val()
 
   if /^\d$/.test(val) and val isnt '0'
-    $target.val("0#{val} / ")
+    $target.val("0#{val}" + $.payment.expiryFormat)
 
 formatBackExpiry = (e) ->
   $target = $(e.currentTarget)
@@ -264,9 +264,9 @@ formatBackExpiry = (e) ->
     $target.prop('selectionStart') isnt value.length
 
   # Remove the trailing space + last digit
-  if /\d\s\/\s$/.test(value)
+  if $.payment.expiryFormatRe.test(value)
     e.preventDefault()
-    setTimeout -> $target.val(value.replace(/\d\s\/\s$/, ''))
+    setTimeout -> $target.val(value.replace($.payment.expiryFormatRe, ''))
 
 # Format CVC
 
@@ -395,6 +395,15 @@ $.payment.fn.restrictNumeric = ->
   @on('input', reFormatNumeric)
   this
 
+# Configuration
+
+$.payment.setExpiryDisplayFormat = (fmt) ->
+    $.payment.expiryFormat = fmt
+    re = fmt.replace(/\s/g, '\\s')
+    $.payment.expiryFormatRe = new RegExp("\d#{re}$")
+
+$.payment.setExpiryDisplayFormat(' / ')
+
 # Validations
 
 $.payment.fn.cardExpiryVal = ->
@@ -502,17 +511,17 @@ $.payment.formatExpiry = (expiry) ->
   year = parts[3] || ''
 
   if year.length > 0
-    sep = ' / '
+    sep = $.payment.expiryFormat
 
   else if sep is ' /'
     mon = mon.substring(0, 1)
     sep = ''
 
   else if mon.length == 2 or sep.length > 0
-    sep = ' / '
+    sep = $.payment.expiryFormat
 
   else if mon.length == 1 and mon not in ['0', '1']
     mon = "0#{mon}"
-    sep = ' / '
+    sep = $.payment.expiryFormat
 
   return mon + sep + year

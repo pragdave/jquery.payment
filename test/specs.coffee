@@ -335,3 +335,73 @@ describe 'jquery.payment', ->
       setTimeout ->
         assert.equal $expiry.val(), '1'
         done()
+
+  describe 'formatCardExpiry', ->
+    it 'should format month shorthand correctly', (done) ->
+      $expiry = $('<input type=text>').payment('formatCardExpiry')
+      $expiry.val('')
+
+      e = $.Event('keypress');
+      e.which = 52 # '4'
+      $expiry.trigger(e)
+
+      setTimeout ->
+        assert.equal $expiry.val(), '04 / '
+        done()
+
+    it 'should format forward slash shorthand correctly', (done) ->
+      $expiry = $('<input type=text>').payment('formatCardExpiry')
+      $expiry.val('1')
+
+      e = $.Event('keypress');
+      e.which = 47 # '/'
+      $expiry.trigger(e)
+
+      setTimeout ->
+        assert.equal $expiry.val(), '01 / '
+        done()
+
+    it 'should only allow numbers', (done) ->
+      $expiry = $('<input type=text>').payment('formatCardExpiry')
+      $expiry.val('1')
+
+      e = $.Event('keypress');
+      e.which = 100 # 'd'
+      $expiry.trigger(e)
+
+      setTimeout ->
+        assert.equal $expiry.val(), '1'
+        done()
+
+  describe 'formatCardExpiry with no spaces in display formay', ->
+
+    before () =>
+        $.payment.setExpiryDisplayFormat('/')
+
+    after () =>
+        $.payment.setExpiryDisplayFormat(' / ')
+
+    it 'should format month shorthand correctly', (done) ->
+      $expiry = $('<input type=text>').payment('formatCardExpiry')
+      $expiry.val('')
+
+      e = $.Event('keypress');
+      e.which = 52 # '4'
+      $expiry.trigger(e)
+
+      setTimeout ->
+        assert.equal $expiry.val(), '04/'
+        done()
+
+    it 'should format forward slash shorthand correctly', (done) ->
+      $expiry = $('<input type=text>').payment('formatCardExpiry')
+      $expiry.val('1')
+
+      e = $.Event('keypress');
+      e.which = 47 # '/'
+      $expiry.trigger(e)
+
+      setTimeout ->
+        assert.equal $expiry.val(), '01/'
+        done()
+
